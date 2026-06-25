@@ -10,6 +10,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
+// Pantalla de inicio de sesion con validacion de campos
 public class LoginActivity extends AppCompatActivity {
 
     private TextInputLayout emailLayout, passwordLayout;
