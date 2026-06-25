@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
+// Versión 1.0 - Manejo de usuarios con SQLite
 public class UserDatabaseHelper extends SQLiteOpenHelper {
 
     public UserDatabaseHelper(Context context) {
