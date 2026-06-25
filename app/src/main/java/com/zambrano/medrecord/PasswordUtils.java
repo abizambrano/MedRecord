@@ -3,6 +3,7 @@ package com.zambrano.medrecord;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+// Utilidad para hash SHA-256 de contraseñas
 public class PasswordUtils {
     public static String hashPassword(String password) {
         try {
