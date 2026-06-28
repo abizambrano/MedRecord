@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 import java.util.List;
 
+// Adapter para mostrar medicamentos en RecyclerView con patron ViewHolder
+
 // El Adapter es el puente entre la lista de datos (List<Medicamento>)
 // y las vistas del RecyclerView. Reutiliza las vistas con el patron ViewHolder.
 public class MedicamentoAdapter extends RecyclerView.Adapter<MedicamentoAdapter.ViewHolder> {
