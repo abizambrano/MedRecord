@@ -20,6 +20,8 @@ import com.google.android.material.snackbar.Snackbar;
 import java.util.Calendar;
 import java.util.List;
 
+// DELETE con AlertDialog de confirmacion y Snackbar deshacer
+
 public class MainActivity extends AppCompatActivity implements MedicamentoAdapter.OnItemClickListener {
 
     private RecyclerView recyclerView;
