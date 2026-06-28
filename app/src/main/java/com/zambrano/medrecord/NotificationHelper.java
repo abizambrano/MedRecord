@@ -6,6 +6,8 @@ import android.content.Context;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 
+// Notificaciones locales con AlarmManager y NotificationHelper
+
 // Clase de utilidad que centraliza la creacion de notificaciones.
 // En Android 8+ (API 26) es obligatorio crear un NotificationChannel
 // antes de poder mostrar notificaciones.
