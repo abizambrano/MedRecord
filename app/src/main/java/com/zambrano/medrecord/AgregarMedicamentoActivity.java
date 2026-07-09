@@ -19,6 +19,8 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
     private UserDatabaseHelper db;
     private int idMedicamento = -1; // -1 significa modo crear, >0 significa modo editar
     private int idUsuario;
+    private TextInputEditText etHora;
+    private TextInputLayout layoutHora;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +35,8 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         layoutNombre = findViewById(R.id.layoutNombre);
         layoutDosis = findViewById(R.id.layoutDosis);
         spinnerUnidad = findViewById(R.id.spinnerUnidad);
+        etHora = findViewById(R.id.etHora);
+        layoutHora = findViewById(R.id.layoutHora);
 
         // Configurar dropdown de unidades
         String[] unidades = {"mg", "ml", "pastilla", "capsula", "gota"};
@@ -50,6 +54,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
             etDescripcion.setText(getIntent().getStringExtra("descripcion"));
             etDosis.setText(String.valueOf(getIntent().getIntExtra("dosis_mg", 0)));
             spinnerUnidad.setText(getIntent().getStringExtra("unidad"), false);
+            etHora.setText(getIntent().getStringExtra("hora"));
         }
 
         MaterialButton btnGuardar = findViewById(R.id.btnGuardar);
@@ -61,6 +66,7 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
         String descripcion = etDescripcion.getText() != null ? etDescripcion.getText().toString().trim() : "";
         String dosisStr = etDosis.getText().toString().trim();
         String unidad = spinnerUnidad.getText().toString().trim();
+        String hora = etHora.getText().toString().trim();
 
         // Validaciones
         if (nombre.isEmpty()) { layoutNombre.setError("El nombre es obligatorio"); return; }
@@ -72,11 +78,11 @@ public class AgregarMedicamentoActivity extends AppCompatActivity {
 
         if (idMedicamento == -1) {
             // CREATE: insertar nuevo medicamento
-            long resultado = db.insertarMedicamento(nombre, descripcion, dosis, unidad, idUsuario);
+            long resultado = db.insertarMedicamento(nombre, descripcion, dosis, unidad, hora ,idUsuario);
             if (resultado != -1) Toast.makeText(this, "Medicamento guardado", Toast.LENGTH_SHORT).show();
         } else {
             // UPDATE: actualizar medicamento existente
-            db.actualizarMedicamento(idMedicamento, nombre, descripcion, dosis, unidad);
+            db.actualizarMedicamento(idMedicamento, nombre, descripcion, dosis, unidad, hora);
             Toast.makeText(this, "Medicamento actualizado", Toast.LENGTH_SHORT).show();
         }
         finish(); // Vuelve a MainActivity, que recargara la lista en onResume()

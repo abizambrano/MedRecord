@@ -11,7 +11,7 @@ import java.util.List;
 public class UserDatabaseHelper extends SQLiteOpenHelper {
 
     public UserDatabaseHelper(Context context) {
-        super(context, "medrecord.db", null, 2); // version 2 por nueva tabla
+        super(context, "medrecord.db", null, 3); // version 2 por nueva tabla
     }
 
     @Override
@@ -30,6 +30,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                 "descripcion TEXT," +
                 "dosis_mg INTEGER NOT NULL," +
                 "unidad TEXT NOT NULL," +
+                "hora TEXT," +
                 "id_usuario INTEGER NOT NULL," +
                 "FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario))");
     }
@@ -79,13 +80,14 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     // ── MEDICAMENTOS — CRUD COMPLETO ────────────────────────
 
     // CREATE: inserta un nuevo medicamento y devuelve el ID generado
-    public long insertarMedicamento(String nombre, String descripcion, int dosisMg, String unidad, int idUsuario) {
+    public long insertarMedicamento(String nombre, String descripcion, int dosisMg, String unidad, String hora, int idUsuario) {
         ContentValues values = new ContentValues();
         values.put("nombre", nombre);
         values.put("descripcion", descripcion);
         values.put("dosis_mg", dosisMg);
         values.put("unidad", unidad);
         values.put("id_usuario", idUsuario);
+        values.put("hora", hora);
         return getWritableDatabase().insert("medicamentos", null, values);
     }
 
@@ -103,6 +105,7 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
                         cursor.getString(cursor.getColumnIndexOrThrow("descripcion")),
                         cursor.getInt(cursor.getColumnIndexOrThrow("dosis_mg")),
                         cursor.getString(cursor.getColumnIndexOrThrow("unidad")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("hora")),
                         cursor.getInt(cursor.getColumnIndexOrThrow("id_usuario"))
                 ));
             } while (cursor.moveToNext());
@@ -112,12 +115,13 @@ public class UserDatabaseHelper extends SQLiteOpenHelper {
     }
 
     // UPDATE: actualiza un medicamento existente por su ID
-    public int actualizarMedicamento(int id, String nombre, String descripcion, int dosisMg, String unidad) {
+    public int actualizarMedicamento(int id, String nombre, String descripcion, int dosisMg, String unidad, String hora) {
         ContentValues values = new ContentValues();
         values.put("nombre", nombre);
         values.put("descripcion", descripcion);
         values.put("dosis_mg", dosisMg);
         values.put("unidad", unidad);
+        values.put("hora", hora);
         return getWritableDatabase().update("medicamentos", values,
                 "id_medicamento = ?", new String[]{String.valueOf(id)});
     }

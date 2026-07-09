@@ -46,6 +46,14 @@ public class MainActivity extends AppCompatActivity implements MedicamentoAdapte
             }
         }
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            if (alarmManager != null && !alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+            }
+        }
+
         // Obtener ID del usuario de la sesion activa
         SharedPreferences prefs = getSharedPreferences("medrecord_prefs", MODE_PRIVATE);
         String correo = prefs.getString("correo_usuario", "");
@@ -72,8 +80,14 @@ public class MainActivity extends AppCompatActivity implements MedicamentoAdapte
         super.onResume();
         // Recarga la lista cada vez que vuelve al Activity (despues de agregar/editar)
         cargarMedicamentos();
-        //programarNotificacion("Amoxicilina");
-        NotificationHelper.mostrarNotificacion(this, "Amoxicilina");
+        // Programa notificacion solo si hay medicamentos registrados
+        List<Medicamento> lista = db.obtenerMedicamentos(idUsuario);
+        if (!lista.isEmpty()) {
+            Medicamento primero = lista.get(0);
+            if (primero.getHora() != null && !primero.getHora().isEmpty()) {
+                programarNotificacion(primero.getNombre(), primero.getHora());
+            }
+        }
     }
 
     private void cargarMedicamentos() {
@@ -90,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements MedicamentoAdapte
         intent.putExtra("descripcion", medicamento.getDescripcion());
         intent.putExtra("dosis_mg", medicamento.getDosisMg());
         intent.putExtra("unidad", medicamento.getUnidad());
+        intent.putExtra("hora", medicamento.getHora());
         intent.putExtra("id_usuario", idUsuario);
         startActivity(intent);
     }
@@ -108,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements MedicamentoAdapte
                             .setAction("Deshacer", v -> {
                                 db.insertarMedicamento(medicamento.getNombre(),
                                         medicamento.getDescripcion(), medicamento.getDosisMg(),
-                                        medicamento.getUnidad(), idUsuario);
+                                        medicamento.getUnidad(), medicamento.getHora(),idUsuario);
                                 cargarMedicamentos();
                             }).show();
                 })
@@ -117,21 +132,37 @@ public class MainActivity extends AppCompatActivity implements MedicamentoAdapte
     }
 
     // Programa una notificacion diaria a las 8am para el primer medicamento de la lista
-    private void programarNotificacion(String nombreMedicamento) {
-        Intent intent = new Intent(this, AlarmReceiver.class);
-        intent.putExtra(AlarmReceiver.EXTRA_MEDICAMENTO, nombreMedicamento);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    private void programarNotificacion(String nombreMedicamento, String hora) {
+        try {
+            String[] partes = hora.split(":");
+            int horas = Integer.parseInt(partes[0]);
+            int minutos = Integer.parseInt(partes[1]);
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 8);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(Calendar.HOUR_OF_DAY, horas);
+            calendar.set(Calendar.MINUTE, minutos);
+            calendar.set(Calendar.SECOND, 0);
 
-        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-        if (alarmManager != null) {
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,
-                    calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+            // Si la hora ya paso hoy, programar para mañana
+            if (calendar.getTimeInMillis() <= System.currentTimeMillis()) {
+                calendar.add(Calendar.DAY_OF_YEAR, 1);
+            }
+
+            Intent intent = new Intent(this, AlarmReceiver.class);
+            intent.putExtra(AlarmReceiver.EXTRA_MEDICAMENTO, nombreMedicamento);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+            AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+            if (alarmManager != null) {
+                // setExactAndAllowWhileIdle funciona incluso en modo ahorro de bateria
+                alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        calendar.getTimeInMillis(),
+                        pendingIntent);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
